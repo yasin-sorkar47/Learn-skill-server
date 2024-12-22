@@ -27,6 +27,13 @@ async function run() {
 
     const serviceCollection = client.db("ServicesDB").collection("Services");
 
+    // get all services data from database
+    app.get("/services", async (req, res) => {
+      const limit = parseInt(req.query.limit) || 0;
+      const result = await serviceCollection.find().limit(limit).toArray();
+      res.send(result);
+    });
+
     //get single service data from database
     app.get("/service/:id", async (req, res) => {
       const id = req.params.id;

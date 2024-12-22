@@ -27,6 +27,7 @@ async function run() {
 
     const serviceCollection = client.db("ServicesDB").collection("Services");
 
+    //get single service data from database
     app.get("/service/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -46,6 +47,31 @@ async function run() {
       const email = req.params.email;
       const query = { "provider.email": email };
       const result = await serviceCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // udpate a service from database which you have added
+    app.put("/updateService/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedService = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updatedService.name,
+          price: updatedService.price,
+          description: updatedService.description,
+          image: updatedService.image,
+          serviceArea: updatedService.serviceArea,
+        },
+      };
+
+      const result = await serviceCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+
       res.send(result);
     });
 

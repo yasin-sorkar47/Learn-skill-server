@@ -91,12 +91,12 @@ async function run() {
       res.send(result);
     });
 
-    // get all bookings data from database based o specific email
+    // book related apis start from here
+    // get all bookings data from database based o specific email & if it is a provider or not
     app.get("/bookings/:email", async (req, res) => {
       const email = req.params.email;
       const isProvider = req.query.provider;
       let query = {};
-
       if (isProvider) {
         query.providerEmail = email;
       } else {
@@ -107,10 +107,24 @@ async function run() {
       res.send(result);
     });
 
-    // book related apis start from here
+    // post a booking to database
     app.post("/bookings", async (req, res) => {
       const newBooking = req.body;
       const result = await bookingCollection.insertOne(newBooking);
+      res.send(result);
+    });
+
+    // update a booking from database
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const { status } = req.body;
+      const updateDoc = {
+        $set: {
+          status: status,
+        },
+      };
+      const result = await bookingCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 

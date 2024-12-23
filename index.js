@@ -92,7 +92,7 @@ async function run() {
     });
 
     // book related apis start from here
-    app.post("/addBooking", async (req, res) => {
+    app.post("/bookings", async (req, res) => {
       const newBooking = req.body;
       const result = await bookingCollection.insertOne(newBooking);
       res.send(result);

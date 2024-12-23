@@ -91,10 +91,18 @@ async function run() {
       res.send(result);
     });
 
-    // get all bookings data from database based on specific email
+    // get all bookings data from database based o specific email
     app.get("/bookings/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { currentUserEmail: email };
+      const isProvider = req.query.provider;
+      let query = {};
+
+      if (isProvider) {
+        query.providerEmail = email;
+      } else {
+        query.currentUserEmail = email;
+      }
+
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
     });

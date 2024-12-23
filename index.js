@@ -91,6 +91,14 @@ async function run() {
       res.send(result);
     });
 
+    // get all bookings data from database based on specific email
+    app.get("/bookings/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { currentUserEmail: email };
+      const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // book related apis start from here
     app.post("/bookings", async (req, res) => {
       const newBooking = req.body;

@@ -26,6 +26,7 @@ async function run() {
     // await client.connect();
 
     const serviceCollection = client.db("ServicesDB").collection("Services");
+    const bookingCollection = client.db("ServicesDB").collection("Bookings");
 
     // get all services data from database
     app.get("/services", async (req, res) => {
@@ -87,6 +88,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await serviceCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // book related apis start from here
+    app.post("/addBooking", async (req, res) => {
+      const newBooking = req.body;
+      const result = await bookingCollection.insertOne(newBooking);
       res.send(result);
     });
 

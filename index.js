@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -27,6 +28,17 @@ async function run() {
 
     const serviceCollection = client.db("ServicesDB").collection("Services");
     const bookingCollection = client.db("ServicesDB").collection("Bookings");
+
+    // jwt related apis start from here
+    app.post("/jwt", async (req, res) => {
+      const email = req.body;
+      const token = jwt.sign(email, process.env.JWT_SECRET_KEY, {
+        expiresIn: "1h",
+      });
+
+      console.log(token);
+      res.send({ status: "success" });
+    });
 
     // get all services data from database
     app.get("/services", async (req, res) => {

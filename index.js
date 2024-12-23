@@ -31,7 +31,12 @@ async function run() {
     // get all services data from database
     app.get("/services", async (req, res) => {
       const limit = parseInt(req.query.limit) || 0;
-      const result = await serviceCollection.find().limit(limit).toArray();
+      const search = req.query.search;
+      let query = { name: { $regex: search, $options: "i" } };
+      if (!search) {
+        query = {};
+      }
+      const result = await serviceCollection.find(query).limit(limit).toArray();
       res.send(result);
     });
 
@@ -119,6 +124,7 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const { status } = req.body;
+
       const updateDoc = {
         $set: {
           status: status,

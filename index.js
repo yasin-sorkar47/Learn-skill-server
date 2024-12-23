@@ -2,12 +2,35 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middle where
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
+
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).send("Unauthorize Access");
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).send("Unauthorize Access");
+    }
+
+    req.user = decoded;
+    next();
+  });
+};
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.SECRET_USER_NAME}:${process.env.SECRET_PASSWORD}@cluster0.ze0za.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -36,8 +59,17 @@ async function run() {
         expiresIn: "1h",
       });
 
-      console.log(token);
-      res.send({ status: "success" });
+      res
+        .cookie("token", token, {
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ status: "success" });
+    });
+
+    // clear the cookie
+    app.get("/logout", async (req, res) => {
+      res.clearCookie("token").send({ status: "success" });
     });
 
     // get all services data from database
@@ -68,9 +100,12 @@ async function run() {
     });
 
     // get all services data based on who has added the service
-    app.get("/services/:email", async (req, res) => {
+    app.get("/services/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { "provider.email": email };
+      if (req.user.email !== email) {
+        return res.status(403).send("Access Denied");
+      }
       const result = await serviceCollection.find(query).toArray();
       res.send(result);
     });

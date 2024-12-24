@@ -85,7 +85,7 @@ async function run() {
     });
 
     //get single service data from database
-    app.get("/service/:id", async (req, res) => {
+    app.get("/service/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await serviceCollection.findOne(query);
@@ -145,7 +145,7 @@ async function run() {
 
     // book related apis start from here
     // get all bookings data from database based o specific email & if it is a provider or not
-    app.get("/bookings/:email", async (req, res) => {
+    app.get("/bookings/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const isProvider = req.query.provider;
       let query = {};

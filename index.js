@@ -9,7 +9,11 @@ const port = process.env.PORT || 5000;
 // middle where
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://online-education-326ed.web.app",
+      "https://online-education-326ed.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -18,6 +22,7 @@ app.use(express.json());
 
 const verifyToken = (req, res, next) => {
   const token = req.cookies.token;
+
   if (!token) {
     return res.status(401).send("Unauthorize Access");
   }
@@ -61,6 +66,7 @@ async function run() {
 
       res
         .cookie("token", token, {
+          httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
@@ -69,7 +75,14 @@ async function run() {
 
     // clear the cookie
     app.get("/logout", async (req, res) => {
-      res.clearCookie("token").send({ status: "success" });
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          maxAge: 0,
+        })
+        .send({ status: "success" });
     });
 
     // get all services data from database
